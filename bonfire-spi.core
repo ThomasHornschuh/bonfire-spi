@@ -1,0 +1,26 @@
+CAPI=1
+[main]
+name = ::bonfire-spi:0
+depend = ::bonfire-util:0
+
+simulators=ghdl isim xsim
+
+[fileset rtl]
+files = rtl/spi_master.vhd rtl/spi_slave.vhd rtl/bonfire_spi.vhd
+file_type=vhdlSource
+
+
+[fileset sim]
+files=tb/spi_loopback.vhd tb/spi_loopback_test.vhd tb/tb_spi_interface.vhd
+file_type=vhdlSource
+scope = private
+
+
+[simulator]
+toplevel = tb_spi_interface
+
+[ghdl]
+analyze_options= --ieee=synopsys
+
+[xsim]
+xsim_options= -debug all

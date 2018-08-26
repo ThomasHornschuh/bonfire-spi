@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="bonfire-spi_0.wdb" id="1">
+         <top_modules>
+            <top_module name="tb_spi_interface" />
+            <top_module name="txt_util" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="454000001fs"></ZoomEndTime>
+      <Cursor1Time time="276000000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="175"></NameColumnWidth>
+      <ValueColumnWidth column_width="142"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="25" />
+   <wvobject type="logic" fp_name="/tb_spi_interface/clk_i">
+      <obj_property name="ElementShortName">clk_i</obj_property>
+      <obj_property name="ObjectShortName">clk_i</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/reset_i">
+      <obj_property name="ElementShortName">reset_i</obj_property>
+      <obj_property name="ObjectShortName">reset_i</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/slave_miso_i">
+      <obj_property name="ElementShortName">slave_miso_i</obj_property>
+      <obj_property name="ObjectShortName">slave_miso_i</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/slave_cs_o">
+      <obj_property name="ElementShortName">slave_cs_o</obj_property>
+      <obj_property name="ObjectShortName">slave_cs_o</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/slave_clk_o">
+      <obj_property name="ElementShortName">slave_clk_o</obj_property>
+      <obj_property name="ObjectShortName">slave_clk_o</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/slave_mosi_o">
+      <obj_property name="ElementShortName">slave_mosi_o</obj_property>
+      <obj_property name="ObjectShortName">slave_mosi_o</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/wb_cyc_in">
+      <obj_property name="ElementShortName">wb_cyc_in</obj_property>
+      <obj_property name="ObjectShortName">wb_cyc_in</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/wb_stb_in">
+      <obj_property name="ElementShortName">wb_stb_in</obj_property>
+      <obj_property name="ObjectShortName">wb_stb_in</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/wb_we_in">
+      <obj_property name="ElementShortName">wb_we_in</obj_property>
+      <obj_property name="ObjectShortName">wb_we_in</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/wb_ack_out">
+      <obj_property name="ElementShortName">wb_ack_out</obj_property>
+      <obj_property name="ObjectShortName">wb_ack_out</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi_interface/wb_adr_in">
+      <obj_property name="ElementShortName">wb_adr_in[4:2]</obj_property>
+      <obj_property name="ObjectShortName">wb_adr_in[4:2]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi_interface/wb_dat_in">
+      <obj_property name="ElementShortName">wb_dat_in[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_dat_in[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi_interface/wb_dat_out">
+      <obj_property name="ElementShortName">wb_dat_out[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_dat_out[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider17" type="divider">
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi_interface/uut/spi_data_read">
+      <obj_property name="ElementShortName">spi_data_read[7:0]</obj_property>
+      <obj_property name="ObjectShortName">spi_data_read[7:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/uut/m_do_valid_o">
+      <obj_property name="ElementShortName">m_do_valid_o</obj_property>
+      <obj_property name="ObjectShortName">m_do_valid_o</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/uut/m_di_req_o">
+      <obj_property name="ElementShortName">m_di_req_o</obj_property>
+      <obj_property name="ObjectShortName">m_di_req_o</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/uut/m_wren_i">
+      <obj_property name="ElementShortName">m_wren_i</obj_property>
+      <obj_property name="ObjectShortName">m_wren_i</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/uut/m_wren_ack">
+      <obj_property name="ElementShortName">m_wren_ack</obj_property>
+      <obj_property name="ObjectShortName">m_wren_ack</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/uut/tx_busy">
+      <obj_property name="ElementShortName">tx_busy</obj_property>
+      <obj_property name="ObjectShortName">tx_busy</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/uut/rx_busy">
+      <obj_property name="ElementShortName">rx_busy</obj_property>
+      <obj_property name="ObjectShortName">rx_busy</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/uut/Inst_spi_master/spi_ssel_o">
+      <obj_property name="ElementShortName">spi_ssel_o</obj_property>
+      <obj_property name="ObjectShortName">spi_ssel_o</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/uut/tx_wb_ack">
+      <obj_property name="ElementShortName">tx_wb_ack</obj_property>
+      <obj_property name="ObjectShortName">tx_wb_ack</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/uut/req_read">
+      <obj_property name="ElementShortName">req_read</obj_property>
+      <obj_property name="ObjectShortName">req_read</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/uut/req_write">
+      <obj_property name="ElementShortName">req_write</obj_property>
+      <obj_property name="ObjectShortName">req_write</obj_property>
+   </wvobject>
+</wave_config>
