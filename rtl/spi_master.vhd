@@ -175,12 +175,14 @@ entity spi_master is
         N : positive := 32;                                             -- 32bit serial word length is default
         CPOL : std_logic := '0';                                        -- SPI mode selection (mode 0 default)
         CPHA : std_logic := '0';                                        -- CPOL = clock polarity, CPHA = clock phase.
-        PREFETCH : positive := 2;                                       -- prefetch lookahead cycles
-        SPI_2X_CLK_DIV : positive := 5);                                -- for a 100MHz sclk_i, yields a 10MHz SCK
+        PREFETCH : positive := 2);                                       -- prefetch lookahead cycles
+     --   SPI_2X_CLK_DIV : positive := 5);                                -- for a 100MHz sclk_i, yields a 10MHz SCK
     Port (  
         sclk_i : in std_logic := 'X';                                   -- high-speed serial interface system clock
         pclk_i : in std_logic := 'X';                                   -- high-speed parallel interface system clock
         rst_i : in std_logic := 'X';                                    -- reset core
+        clk_div_i : std_logic_vector(7 downto 0);                  -- TH: Clock Divider
+        
         ---- serial interface ----
         spi_ssel_o : out std_logic;                                     -- spi bus slave select line
         spi_sck_o : out std_logic;                                      -- spi bus sck
@@ -214,7 +216,8 @@ end spi_master;
 --================================================================================================================
 architecture rtl of spi_master is
    
-
+attribute keep_hierarchy : string;
+attribute keep_hierarchy of rtl : architecture is "yes";
 
     -- core clocks, generated from 'sclk_i': initialized at GSR to differential values
     signal core_clk     : std_logic := '0';     -- continuous core clock, positive logic
@@ -298,10 +301,10 @@ begin
     assert PREFETCH <= N-5
     report "Generic parameter 'PREFETCH' (lookahead count) out of range, needs to be N-5 maximum"
     severity FAILURE;
-    -- SPI_2X_CLK_DIV clock divider value must not be zero
-    assert SPI_2X_CLK_DIV > 0
-    report "Generic parameter 'SPI_2X_CLK_DIV' must not be zero"
-    severity FAILURE;
+    ---- SPI_2X_CLK_DIV clock divider value must not be zero
+    --assert SPI_2X_CLK_DIV > 0
+    --report "Generic parameter 'SPI_2X_CLK_DIV' must not be zero"
+    --severity FAILURE;
 
     --=============================================================================================
     --  CLOCK GENERATION
@@ -322,12 +325,12 @@ begin
     -----------------------------------------------------------------------------------------------
     -- generate the 2x spi base clock enable from the serial high-speed input clock
     spi_2x_ce_gen_proc: process (sclk_i) is
-        variable clk_cnt : integer range SPI_2X_CLK_DIV-1 downto 0 := 0;
+        variable clk_cnt : unsigned(7 downto 0) := (others=>'0');
     begin
         if sclk_i'event and sclk_i = '1' then
-            if clk_cnt = SPI_2X_CLK_DIV-1 then
+            if clk_cnt >= unsigned(clk_div_i) then
                 spi_2x_ce <= '1';
-                clk_cnt := 0;
+                clk_cnt := (others=>'0');
             else
                 spi_2x_ce <= '0';
                 clk_cnt := clk_cnt + 1;

@@ -25,10 +25,7 @@
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx primitives in this code.
@@ -74,6 +71,26 @@ end bonfire_spi;
 
 architecture rtl of bonfire_spi is
 
+-- Attribute Infos for Xilinx Vivado IP Integrator Block designs
+-- Should not have negative influence on other platforms.
+
+ATTRIBUTE X_INTERFACE_INFO : STRING;
+ATTRIBUTE X_INTERFACE_INFO of  wb_clk_i : SIGNAL is "xilinx.com:signal:clock:1.0 wb_clk_i CLK";
+--X_INTERFACE_INFO of  wb_rst_i : SIGNAL is "xilinx.com:signal:reset:1.0 wb_rst_i RESET";
+
+ATTRIBUTE X_INTERFACE_PARAMETER : STRING;
+ATTRIBUTE X_INTERFACE_PARAMETER of wb_clk_i : SIGNAL is "ASSOCIATED_BUSIF WB_SLAVE";
+--ATTRIBUTE X_INTERFACE_PARAMETER of rst_i : SIGNAL is "ASSOCIATED_BUSIF WB_DB";
+
+ATTRIBUTE X_INTERFACE_INFO OF wb_cyc_in: SIGNAL IS "bonfire.eu:wb:Wishbone_master:1.0 WB_SLAVE wb_dbus_cyc_o";
+ATTRIBUTE X_INTERFACE_INFO OF wb_stb_in: SIGNAL IS "bonfire.eu:wb:Wishbone_master:1.0 WB_SLAVE wb_dbus_stb_o";
+ATTRIBUTE X_INTERFACE_INFO OF wb_we_in: SIGNAL IS "bonfire.eu:wb:Wishbone_master:1.0  WB_SLAVE wb_dbus_we_o";
+ATTRIBUTE X_INTERFACE_INFO OF wb_ack_out: SIGNAL IS "bonfire.eu:wb:Wishbone_master:1.0 WB_SLAVE wb_dbus_ack_i";
+ATTRIBUTE X_INTERFACE_INFO OF wb_adr_in: SIGNAL IS "bonfire.eu:wb:Wishbone_master:1.0 WB_SLAVE wb_dbus_adr_o";
+ATTRIBUTE X_INTERFACE_INFO OF wb_dat_in: SIGNAL IS "bonfire.eu:wb:Wishbone_master:1.0 WB_SLAVE wb_dbus_dat_o";
+ATTRIBUTE X_INTERFACE_INFO OF wb_dat_out: SIGNAL IS "bonfire.eu:wb:Wishbone_master:1.0 WB_SLAVE wb_dbus_dat_i";
+
+
 constant SPI_WORD_LEN : natural := 8;
 
 
@@ -115,7 +132,7 @@ signal tx_reg : std_logic_vector(SPI_WORD_LEN-1 downto 0);
 
 signal ctl_reg : std_logic_vector(1 downto 0) := "11";
 signal status_reg : std_logic_vector(3 downto 0) :=(others=>'0');
-signal clk_reg : std_logic_vector(3 downto 0) := (others=>'0');
+signal clk_reg : std_logic_vector(7 downto 0) := std_logic_vector(to_unsigned(SPI_2X_CLK_DIV-1,8));
 
 
 
@@ -154,6 +171,7 @@ begin
 
   wb_dat_out <=
        fill_bits(rx_reg) when wb_adr_in = A_RX_REG else
+       fill_bits(tx_reg) when wb_adr_in = A_TX_REG else
        fill_bits(ctl_reg) when wb_adr_in = A_CTL_REG else
        fill_bits(status_reg) when wb_adr_in = A_STATUS_REG else
        fill_bits(clk_reg) when wb_adr_in = A_CLK_REG else (others => 'X');
@@ -163,11 +181,12 @@ begin
     -- Component instantiation for the SPI master port
     --=============================================================================================
     Inst_spi_master: entity work.spi_master(rtl)
-        generic map (N => SPI_WORD_LEN, CPOL => CPOL, CPHA => CPHA, SPI_2X_CLK_DIV => SPI_2X_CLK_DIV)
+        generic map (N => SPI_WORD_LEN, CPOL => CPOL, CPHA => CPHA)
         port map(
             sclk_i => spi_clk_i,                      -- system clock is used for serial and parallel ports
             pclk_i => wb_clk_i,
             rst_i => wb_rst_i,
+            clk_div_i => clk_reg,
             spi_ssel_o => open,
             spi_sck_o => slave_clk_o,
             spi_mosi_o => slave_mosi_o,
@@ -217,7 +236,7 @@ begin
         if wb_rst_i='1' then
           ctl_reg <= "11";
           status_reg <= (others=>'0');
-          clk_reg <= (others=>'0');
+          clk_reg <= std_logic_vector(to_unsigned(SPI_2X_CLK_DIV-1,clk_reg'length));
           write_lock <= '0';
         elsif req_write='1'  then
 

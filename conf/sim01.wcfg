@@ -3,23 +3,30 @@
    <wave_state>
    </wave_state>
    <db_ref_list>
-      <db_ref path="bonfire-spi_0.wdb" id="1">
+      <db_ref path="tb_spi_interface_behav.wdb" id="1">
          <top_modules>
+            <top_module name="glbl" />
             <top_module name="tb_spi_interface" />
             <top_module name="txt_util" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="125064166666fs"></ZoomStartTime>
-      <ZoomEndTime time="125329166667fs"></ZoomEndTime>
-      <Cursor1Time time="125239167000fs"></Cursor1Time>
+      <ZoomStartTime time="393125000000fs"></ZoomStartTime>
+      <ZoomEndTime time="526025000001fs"></ZoomEndTime>
+      <Cursor1Time time="503825000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="175"></NameColumnWidth>
-      <ValueColumnWidth column_width="134"></ValueColumnWidth>
+      <ValueColumnWidth column_width="130"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="27" />
+   <WVObjectSize size="34" />
+   <wave_markers>
+      <marker label="" time="243495000000" />
+      <marker label="" time="244014750000" />
+      <marker label="" time="175084950000" />
+      <marker label="" time="76825000000" />
+   </wave_markers>
    <wvobject type="logic" fp_name="/tb_spi_interface/clk_i">
       <obj_property name="ElementShortName">clk_i</obj_property>
       <obj_property name="ObjectShortName">clk_i</obj_property>
@@ -127,5 +134,31 @@
    <wvobject type="array" fp_name="/tb_spi_interface/uut/rx_reg">
       <obj_property name="ElementShortName">rx_reg[7:0]</obj_property>
       <obj_property name="ObjectShortName">rx_reg[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider45" type="divider">
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/uut/Inst_spi_master/spi_2x_ce">
+      <obj_property name="ElementShortName">spi_2x_ce</obj_property>
+      <obj_property name="ObjectShortName">spi_2x_ce</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/uut/Inst_spi_master/spi_clk">
+      <obj_property name="ElementShortName">spi_clk</obj_property>
+      <obj_property name="ObjectShortName">spi_clk</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/uut/Inst_spi_master/core_clk">
+      <obj_property name="ElementShortName">core_clk</obj_property>
+      <obj_property name="ObjectShortName">core_clk</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/uut/Inst_spi_master/core_n_clk">
+      <obj_property name="ElementShortName">core_n_clk</obj_property>
+      <obj_property name="ObjectShortName">core_n_clk</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/uut/Inst_spi_master/core_ce">
+      <obj_property name="ElementShortName">core_ce</obj_property>
+      <obj_property name="ObjectShortName">core_ce</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi_interface/uut/Inst_spi_master/core_n_ce">
+      <obj_property name="ElementShortName">core_n_ce</obj_property>
+      <obj_property name="ObjectShortName">core_n_ce</obj_property>
    </wvobject>
 </wave_config>

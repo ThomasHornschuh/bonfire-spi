@@ -64,6 +64,8 @@ ARCHITECTURE behavior OF tb_spi_interface IS
 
    -- Clock period definitions
    constant clk_i_period : time := 10 ns;
+   
+   constant clk_divider : natural := 1; --  
 
 BEGIN
 
@@ -141,28 +143,13 @@ BEGIN
             wb_cyc_in <= '0';
            --wait for clk_period;
         end procedure;
-
-
-        procedure test is
+        
+        
+        procedure basic_test(lower:natural;upper:natural) is
         begin
-          print("Setting up Clock Divider");
-          wb_write("100",X"01"); -- Clock Divider
-          wb_read("100",d);
-          print("Check Clock Divider: " & hstr(d));
-          assert d = X"01"
-            report "Clock divider set failure"
-            severity failure;
-
-          wb_write("000",X"FE"); -- Chip Select
-          -- send 4 bytes without checking for receive
-          for i in 1 to 4 loop
-            t:=std_logic_vector(to_unsigned(i,t'length));
-            wb_write("010",t);
-          end loop;
-          wb_read("011",d); -- Dummy Read to sync
-
-          -- Read/Write all 256 possible values of a byte
-          for i in 0 to 255 loop
+       
+          wb_write("000",X"FE"); -- Chip Select and Auto wait mode
+          for i in lower to upper loop
             t:=std_logic_vector(to_unsigned(i,t'length));
             wb_write("010",t);
             wb_read("011",d);
@@ -172,6 +159,38 @@ BEGIN
               severity failure;
 
           end loop;
+         
+        end procedure;
+        
+        procedure set_divider(clk_divider:natural) is
+        variable div : std_logic_vector(7 downto 0);
+        begin
+           div:=std_logic_vector(to_unsigned(clk_divider-1,t'length));
+           print("Setting up Clock Divider");
+           wb_write("100",div); -- Clock Divider
+           wb_read("100",d);
+           print("Check Clock Divider: " & hstr(d));
+           assert d = div
+            report "Clock divider set failure"
+            severity failure;
+        
+        end procedure; 
+
+
+        procedure test is
+        begin
+          
+
+          set_divider(2);
+          wb_write("000",X"FE"); -- Chip Select
+          -- send 4 bytes without checking for receive
+          for i in 1 to 4 loop
+            t:=std_logic_vector(to_unsigned(i,t'length));
+            wb_write("010",t);
+          end loop;
+          wb_read("011",d); -- Dummy Read to sync
+  
+          basic_test(0,255);
 
           print("Test in non autowait mode");
 
@@ -206,11 +225,14 @@ BEGIN
               severity failure;
 
           end loop;
+          
+          print("Test different clock rates");
+          set_divider(1); -- Lower extreme
+          basic_test(0,255);
+          set_divider(256); -- Upper extreme
+          basic_test(250,255); -- Only a few bytes because of the slow clock
 
-          -- Dummy read, just to check that there is no deadlock
-          for i in 1 to 3 loop
-            wb_read("011",d);
-          end loop;
+        
 
         end procedure;
 
@@ -224,13 +246,13 @@ BEGIN
       test;
 
       -- Repeat Test with continues Wishbone cycles
-      cont_bus<=true;
-      reset_i <= '1';
-      wait for clk_i_period * 5;
-      reset_i <= '0';
-      wait until rising_edge(clk_i); -- synchronize
+--      cont_bus<=true;
+--      reset_i <= '1';
+--      wait for clk_i_period * 5;
+--      reset_i <= '0';
+--      wait until rising_edge(clk_i); -- synchronize
 
-      test;
+--      test;
 
 
       report "Success";
