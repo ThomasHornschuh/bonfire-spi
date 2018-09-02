@@ -508,9 +508,9 @@ begin
         di_req_next <= di_req_reg;                                      -- prefetch data request
         spi_mosi_o <= sh_reg(N-1);                                      -- default to avoid latch inference
         state_next <= state_reg;                                        -- next state 
-        case state_reg is
+        --case state_reg is
         
-            when (N+1) =>                                               -- this state is to enable SSEL before SCK
+        if state_reg = N+1 then                                         -- this state is to enable SSEL before SCK
                 spi_mosi_o <= sh_reg(N-1);                              -- shift out tx bit from the MSb
                 ssel_ena_next <= '1';                                   -- tx in progress: will assert SSEL
                 sck_ena_next <= '1';                                    -- enable SCK on next cycle (stays off on first SSEL clock cycle)
@@ -518,7 +518,7 @@ begin
                 wr_ack_next <= '0';                                     -- remove write acknowledge for all but the load stages
                 state_next <= state_reg - 1;                            -- update next state at each sck pulse
                 
-            when (N) =>                                                 -- deassert 'di_rdy' and stretch do_valid
+       elsif state_reg=N then                                           -- deassert 'di_rdy' and stretch do_valid
                 spi_mosi_o <= sh_reg(N-1);                              -- shift out tx bit from the MSb
                 di_req_next <= '0';                                     -- prefetch data request: deassert when shifting data
                 sh_next(N-1 downto 1) <= sh_reg(N-2 downto 0);          -- shift inner bits
@@ -526,7 +526,7 @@ begin
                 wr_ack_next <= '0';                                     -- remove write acknowledge for all but the load stages
                 state_next <= state_reg - 1;                            -- update next state at each sck pulse
                 
-            when (N-1) downto (PREFETCH+3) =>                           -- remove 'do_transfer' and shift bits
+       elsif state_reg <= (N-1) and state_reg >= (PREFETCH+3) then                           -- remove 'do_transfer' and shift bits
                 spi_mosi_o <= sh_reg(N-1);                              -- shift out tx bit from the MSb
                 di_req_next <= '0';                                     -- prefetch data request: deassert when shifting data
                 do_transfer_next <= '0';                                -- reset 'do_valid' transfer signal
@@ -535,7 +535,7 @@ begin
                 wr_ack_next <= '0';                                     -- remove write acknowledge for all but the load stages
                 state_next <= state_reg - 1;                            -- update next state at each sck pulse
                 
-            when (PREFETCH+2) downto 2 =>                               -- raise prefetch 'di_req_o' signal
+       elsif state_reg <= (PREFETCH+2) and state_reg >=2 then                               -- raise prefetch 'di_req_o' signal
                 spi_mosi_o <= sh_reg(N-1);                              -- shift out tx bit from the MSb
                 di_req_next <= '1';                                     -- request data in advance to allow for pipeline delays
                 sh_next(N-1 downto 1) <= sh_reg(N-2 downto 0);          -- shift inner bits
@@ -543,6 +543,8 @@ begin
                 wr_ack_next <= '0';                                     -- remove write acknowledge for all but the load stages
                 state_next <= state_reg - 1;                            -- update next state at each sck pulse
                 
+       else 
+         case state_reg is
             when 1 =>                                                   -- transfer rx data to do_buffer and restart if new data is written
                 spi_mosi_o <= sh_reg(N-1);                              -- shift out tx bit from the MSb
                 di_req_next <= '1';                                     -- request data in advance to allow for pipeline delays
@@ -578,7 +580,8 @@ begin
                 
             when others =>
                 state_next <= 0;                                        -- state 0 is safe state
-        end case; 
+         end case;
+       end if;   
     end process core_combi_proc;
 
     --=============================================================================================

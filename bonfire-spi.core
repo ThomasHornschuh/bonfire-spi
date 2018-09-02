@@ -6,7 +6,7 @@ depend = ::bonfire-util:0 ::bonfire-axi4l2wb:0
 simulators=ghdl isim xsim
 
 [fileset rtl]
-files = rtl/spi_master.vhd  rtl/bonfire_spi.vhd
+files = rtl/spi_master.vhd rtl/bonfire_spi.vhd
 file_type=vhdlSource
 
 [fileset axi4]
@@ -16,7 +16,7 @@ usage=vivado
 
 
 [fileset sim]
-files=tb/spi_loopback.vhd tb/spi_loopback_test.vhd tb/tb_spi_interface.vhd
+files= tb/tb_spi_interface.vhd
 file_type=vhdlSource
 scope = private
 
@@ -26,6 +26,8 @@ toplevel = tb_spi_interface
 
 [ghdl]
 analyze_options= --ieee=synopsys
+
+
 
 [xsim]
 xsim_options= -debug all
