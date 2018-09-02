@@ -134,38 +134,77 @@ signal ctl_reg : std_logic_vector(1 downto 0) := "11";
 signal status_reg : std_logic_vector(3 downto 0) :=(others=>'0');
 signal clk_reg : std_logic_vector(7 downto 0) := std_logic_vector(to_unsigned(SPI_2X_CLK_DIV-1,8));
 
+component spi_master
+Generic (
+    N : positive := 32;                                             -- 32bit serial word length is default
+    CPOL : std_logic := '0';                                        -- SPI mode selection (mode 0 default)
+    CPHA : std_logic := '0';                                        -- CPOL = clock polarity, CPHA = clock phase.
+    PREFETCH : positive := 2);                                       -- prefetch lookahead cycles
+ --   SPI_2X_CLK_DIV : positive := 5);                                -- for a 100MHz sclk_i, yields a 10MHz SCK
+Port (
+    sclk_i : in std_logic := 'X';                                   -- high-speed serial interface system clock
+    pclk_i : in std_logic := 'X';                                   -- high-speed parallel interface system clock
+    rst_i : in std_logic := 'X';                                    -- reset core
+    clk_div_i : std_logic_vector(7 downto 0);                  -- TH: Clock Divider
+
+    ---- serial interface ----
+    spi_ssel_o : out std_logic;                                     -- spi bus slave select line
+    spi_sck_o : out std_logic;                                      -- spi bus sck
+    spi_mosi_o : out std_logic;                                     -- spi bus mosi output
+    spi_miso_i : in std_logic := 'X';                               -- spi bus spi_miso_i input
+    ---- parallel interface ----
+    di_req_o : out std_logic;                                       -- preload lookahead data request line
+    di_i : in  std_logic_vector (N-1 downto 0) := (others => 'X');  -- parallel data in (clocked on rising spi_clk after last bit)
+    wren_i : in std_logic := 'X';                                   -- user data write enable, starts transmission when interface is idle
+    wr_ack_o : out std_logic;                                       -- write acknowledge
+    do_valid_o : out std_logic;                                     -- do_o data valid signal, valid during one spi_clk rising edge.
+    do_o : out  std_logic_vector (N-1 downto 0);                    -- parallel output (clocked on rising spi_clk after last bit)
+    --- debug ports: can be removed or left unconnected for the application circuit ---
+    sck_ena_o : out std_logic;                                      -- debug: internal sck enable signal
+    sck_ena_ce_o : out std_logic;                                   -- debug: internal sck clock enable signal
+    do_transfer_o : out std_logic;                                  -- debug: internal transfer driver
+    wren_o : out std_logic;                                         -- debug: internal state of the wren_i pulse stretcher
+    rx_bit_reg_o : out std_logic;                                   -- debug: internal rx bit
+    state_dbg_o : out std_logic_vector (3 downto 0);                -- debug: internal state register
+    core_clk_o : out std_logic;
+    core_n_clk_o : out std_logic;
+    core_ce_o : out std_logic;
+    core_n_ce_o : out std_logic;
+    sh_reg_dbg_o : out std_logic_vector (N-1 downto 0)              -- debug: internal shift register
+);
+end component spi_master;
 
 
 
 
 begin
 
-  slave_cs_o <= ctl_reg(0);
+    slave_cs_o <= ctl_reg(0);
 
-  enable <= wb_cyc_in and wb_stb_in;
-  req_read <= enable and not wb_we_in;
-  req_write <= enable and wb_we_in;
+    enable <= wb_cyc_in and wb_stb_in;
+    req_read <= enable and not wb_we_in;
+    req_write <= enable and wb_we_in;
 
-  ack: process(req_read,req_write, tx_busy,wb_adr_in,m_wren_i)
-  begin
+	ack: process(req_read,req_write, tx_busy,wb_adr_in,m_wren_i)
+	begin
 
-    if req_read='1' then
-      if wb_adr_in=A_RX_REG then
-        wb_ack_out <= not tx_busy;
-      else
-        wb_ack_out <= '1';
-      end if;
-    elsif req_write='1' then
-      if wb_adr_in=A_TX_REG then
-        wb_ack_out <= not tx_busy;
-      else
-        wb_ack_out <= '1';
-      end if;
-   else
-     wb_ack_out <= '0';
-   end if;
+	if req_read='1' then
+	  if wb_adr_in=A_RX_REG then
+		wb_ack_out <= not tx_busy;
+	  else
+		wb_ack_out <= '1';
+	  end if;
+	elsif req_write='1' then
+	  if wb_adr_in=A_TX_REG then
+		wb_ack_out <= not tx_busy;
+	  else
+		wb_ack_out <= '1';
+	  end if;
+	else
+	 wb_ack_out <= '0';
+	end if;
 
-  end process;
+	end process;
 
 
 
@@ -180,10 +219,10 @@ begin
    --=============================================================================================
     -- Component instantiation for the SPI master port
     --=============================================================================================
-    Inst_spi_master: entity work.spi_master(rtl)
+    Inst_spi_master: spi_master
         generic map (N => SPI_WORD_LEN, CPOL => CPOL, CPHA => CPHA)
         port map(
-            sclk_i => spi_clk_i,                      -- system clock is used for serial and parallel ports
+            sclk_i => spi_clk_i,
             pclk_i => wb_clk_i,
             rst_i => wb_rst_i,
             clk_div_i => clk_reg,
@@ -197,16 +236,6 @@ begin
             do_valid_o => m_do_valid_o,
             do_o => rx_reg,
             wr_ack_o => m_wren_ack
-
-            ----- debug -----
-            --do_transfer_o => m_do_transfer_o,
-            --wren_o => m_wren_o,
-
-            --rx_bit_reg_o => m_rx_bit_reg_o,
-
-            --core_clk_o => m_core_clk_o,
-            --core_n_clk_o => m_core_n_clk_o,
-            --sh_reg_dbg_o => m_sh_reg_dbg_o
         );
 
 
@@ -264,4 +293,3 @@ begin
 
 
 end rtl;
-
