@@ -67,7 +67,7 @@ generic(
    -- MOSI Pin
    io0_i : in std_logic; -- not used currently
    io0_o : out std_logic; -- MOSI Output
-   io0_t : out std_logic; -- Always '1' currently
+   io0_t : out std_logic; -- Always '0' currently
 
    -- MISO Pin
    io1_i : in std_logic;  -- MISO Input
@@ -77,7 +77,7 @@ generic(
    -- SCLK Pin
    sck_i : in std_logic; -- not used currently
    sck_o : out std_logic;
-   sck_t : out std_logic; -- Always '1' currently
+   sck_t : out std_logic; -- Always '0' currently
 
    -- Slave Select (CS) pin
    --ss_i : in std_logic_vector(0 downto 0); -- not used currently
@@ -141,7 +141,7 @@ generic (
       ADR_LOW        : natural := 2
     );
     port (
-      sclk_i     : in  std_logic;
+      spi_clk_i     : in  std_logic;
       slave_cs_o   : out std_logic;
       slave_clk_o  : out std_logic;
       slave_mosi_o : out std_logic;
@@ -247,7 +247,7 @@ generic (
     attribute X_INTERFACE_INFO of ss_o : signal is "xilinx.com:interface:spi:1.0 SPI_0 SS_O";
     attribute X_INTERFACE_INFO of ss_t : signal is "xilinx.com:interface:spi:1.0 SPI_0 SS_T";
     
-    ATTRIBUTE X_INTERFACE_PARAMETER OF io0_i: SIGNAL IS "XIL_INTERFACENAME SPI_0, BOARD.ASSOCIATED_PARAM QSPI_BOARD_INTERFACE";
+    ATTRIBUTE X_INTERFACE_PARAMETER OF io0_i: SIGNAL IS "XIL_INTERFACENAME SPI_0, XIL_INTERFACEMODE MASTER, BOARD.ASSOCIATED_PARAM QSPI_BOARD_INTERFACE";
 
     attribute X_INTERFACE_INFO of sclk_i: signal is "xilinx.com:signal:clock:1.0 sclk_i CLK";
     attribute X_INTERFACE_PARAMETER of sclk_i: signal is "ASSOCIATED_BUSIF SPI_0";
@@ -277,10 +277,10 @@ begin
 
   -- SPI Bus Wiring
 
-  io0_t <= '1';
+  io0_t <= '0';
   io1_t <= '1';
-  sck_t <= '1';
-  ss_t <= '1';
+  sck_t <= '0';
+  ss_t <= '0';
 
   io0_o <= spi_mosi;
   spi_miso <= io1_i;
@@ -355,7 +355,7 @@ begin
         slave_miso_i => spi_miso,
         slave_cs_o => spi_cs,
         
-        sclk_i => sclk_i
+        spi_clk_i => sclk_i
         
 
       );
