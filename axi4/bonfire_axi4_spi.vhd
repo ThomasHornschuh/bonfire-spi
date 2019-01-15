@@ -243,14 +243,13 @@ generic (
     attribute X_INTERFACE_INFO of sck_o : signal is "xilinx.com:interface:spi:1.0 SPI_0 SCK_O";
     attribute X_INTERFACE_INFO of sck_t : signal is "xilinx.com:interface:spi:1.0 SPI_0 SCK_T";
 
-    --attribute X_INTERFACE_INFO of ss_i : signal is "xilinx.com:interface:spi:1.0 SPI_0 SS_I";
+--    --attribute X_INTERFACE_INFO of ss_i : signal is "xilinx.com:interface:spi:1.0 SPI_0 SS_I";
     attribute X_INTERFACE_INFO of ss_o : signal is "xilinx.com:interface:spi:1.0 SPI_0 SS_O";
     attribute X_INTERFACE_INFO of ss_t : signal is "xilinx.com:interface:spi:1.0 SPI_0 SS_T";
     
-    ATTRIBUTE X_INTERFACE_PARAMETER OF io0_i: SIGNAL IS "XIL_INTERFACENAME SPI_0, XIL_INTERFACEMODE MASTER, BOARD.ASSOCIATED_PARAM QSPI_BOARD_INTERFACE";
-
-    attribute X_INTERFACE_INFO of sclk_i: signal is "xilinx.com:signal:clock:1.0 sclk_i CLK";
-    attribute X_INTERFACE_PARAMETER of sclk_i: signal is "ASSOCIATED_BUSIF SPI_0";
+  --RIBUTE X_INTERFACE_PARAMETER OF io0_i: SIGNAL IS "XIL_INTERFACENAME SPI_0, XIL_NTERFACE_MODE MASTER, BOARD.ASSOCIATED_PARAM QSPI_BOARD_INTERFACE";
+   attribute X_INTERFACE_INFO of sclk_i: signal is "xilinx.com:signal:clock:1.0 sclk_i CLK";
+   attribute X_INTERFACE_PARAMETER of sclk_i: signal is "ASSOCIATED_BUSIF SPI_0";
     
 begin
 

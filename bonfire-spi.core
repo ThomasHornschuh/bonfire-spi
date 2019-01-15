@@ -10,7 +10,7 @@ files = rtl/spi_master.vhd rtl/bonfire_spi.vhd
 file_type=vhdlSource
 
 [fileset axi4]
-files=axi/bonfire_axi4_spi.vhd
+files=axi4/bonfire_axi4_spi.vhd
 file_type=vhdlSource
 usage=vivado
 
