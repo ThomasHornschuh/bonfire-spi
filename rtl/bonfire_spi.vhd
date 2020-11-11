@@ -41,17 +41,18 @@ generic (
 
 
    WB_DATA_WIDTH : natural :=32;
-   ADR_LOW  : natural :=2
+   ADR_LOW  : natural :=2;
+   NUM_PORTS : natural := 1
 );
 port (
       spi_clk_i : in std_logic;
 
 
       -- SPI Port:
-      slave_cs_o         : out std_logic;
-      slave_clk_o        : out std_logic;
-      slave_mosi_o       : out std_logic;
-      slave_miso_i       : in  std_logic;
+      slave_cs_o         : out std_logic_vector(NUM_PORTS-1 downto 0);
+      slave_clk_o        : out std_logic_vector(NUM_PORTS-1 downto 0);
+      slave_mosi_o       : out std_logic_vector(NUM_PORTS-1 downto 0);
+      slave_miso_i       : in  std_logic_vector(NUM_PORTS-1 downto 0);
 
       -- Interrupt signal:
       irq : out std_logic;
@@ -59,7 +60,7 @@ port (
       -- Wishbone ports:
       wb_clk_i   : in std_logic;
       wb_rst_i   : in std_logic;
-      wb_adr_in  : in  std_logic_vector(ADR_LOW+2 downto ADR_LOW);
+      wb_adr_in  : in  std_logic_vector(ADR_LOW+15 downto ADR_LOW);
       wb_dat_in  : in  std_logic_vector(WB_DATA_WIDTH-1 downto 0);
       wb_dat_out : out std_logic_vector(WB_DATA_WIDTH-1 downto 0);
       wb_we_in   : in  std_logic;
@@ -93,6 +94,24 @@ ATTRIBUTE X_INTERFACE_INFO OF wb_dat_out: SIGNAL IS "bonfire.eu:wb:Wishbone_mast
 
 constant SPI_WORD_LEN : natural := 8;
 
+subtype t_portrange is natural range 0 to NUM_PORTS-1;
+
+-- Currently max. 16 Ports are supported. 
+-- For every port 16 adresses are reserved (actually only 5 are used)
+-- So, the lower 4 bits of the address select the register, the upper for select the port
+subtype t_register_adr_range is natural range ADR_LOW+3 downto ADR_LOW;
+subtype t_port_adr_range is natural range ADR_LOW+7 downto ADR_LOW+4;
+
+subtype t_regadr is std_logic_vector(3 downto 0);  
+subtype t_portadr is std_logic_vector(3 downto 0);
+
+-- Register addresses
+constant A_CTL_REG : t_regadr := "0000";
+constant A_STATUS_REG : t_regadr := "0001";
+constant A_TX_REG : t_regadr := "0010";
+constant A_RX_REG : t_regadr := "0011";
+constant A_CLK_REG :t_regadr := "0100";
+
 
 subtype t_dbus is std_logic_vector(wb_dat_out'high downto wb_dat_out'low);
 
@@ -104,35 +123,32 @@ function fill_bits(v: std_logic_vector) return t_dbus is
      return r;
    end;
 
--- Register addresses
+
+-- Address selectors
+signal regadr : t_regadr;
+signal portsel : t_portrange;
 
 
-subtype t_adr is std_logic_vector(2 downto 0);
+signal m_do_valid_o, m_di_req_o, m_wren_ack, m_wren_i : std_logic_vector(t_portrange);
 
-constant A_CTL_REG : t_adr := "000";
-constant A_STATUS_REG : t_adr := "001";
-constant A_TX_REG : t_adr := "010";
-constant A_RX_REG : t_adr := "011";
-constant A_CLK_REG :t_adr := "100";
-
--- --------------
-
-signal rx_reg : std_logic_vector(SPI_WORD_LEN-1 downto 0);
-
-signal m_do_valid_o, m_di_req_o, m_wren_ack : std_logic;
 signal enable, req_read, req_write : std_logic;
 
-signal m_wren_i : std_logic := '0';
+signal tx_busy : std_logic_vector(t_portrange); -- Transfer occuring
+signal write_lock : std_logic_vector(t_portrange) := (others=>'0');
 
-signal tx_busy : std_logic := '0'; -- Transfer occuring
-signal write_lock : std_logic := '0';
+type t_word_reg is array (t_portrange) of std_logic_vector(SPI_WORD_LEN-1 downto 0);
+type t_ctl_reg is array (t_portrange) of std_logic_vector(1 downto 0);
+type t_status_reg is array (t_portrange) of std_logic_vector(3 downto 0);
+type t_clk_reg is array (t_portrange) of std_logic_vector(7 downto 0);
 
-signal tx_reg : std_logic_vector(SPI_WORD_LEN-1 downto 0);
 
 
-signal ctl_reg : std_logic_vector(1 downto 0) := "11";
-signal status_reg : std_logic_vector(3 downto 0) :=(others=>'0');
-signal clk_reg : std_logic_vector(7 downto 0) := std_logic_vector(to_unsigned(SPI_2X_CLK_DIV-1,8));
+-- Registers
+signal rx_reg : t_word_reg;
+signal tx_reg : t_word_reg;
+signal ctl_reg :  t_ctl_reg := (others=> "11" );
+signal status_reg : t_status_reg  := (others => (others => '0'));
+signal clk_reg : t_clk_reg :=   (others=>  std_logic_vector(to_unsigned(SPI_2X_CLK_DIV-1,8)) );
 
 component spi_master
 Generic (
@@ -175,9 +191,11 @@ Port (
 end component spi_master;
 
 
-
-
 begin
+
+    regadr <= wb_adr_in(t_register_adr_range);
+    portsel <= to_integer(unsigned( wb_adr_in(t_port_adr_range)));
+
 
     slave_cs_o <= ctl_reg(0);
 
@@ -185,107 +203,114 @@ begin
     req_read <= enable and not wb_we_in;
     req_write <= enable and wb_we_in;
 
-	ack: process(req_read,req_write, tx_busy,wb_adr_in,m_wren_i)
-	begin
+  	ack: process(req_read,req_write, tx_busy,regadr,portsel)
+  	begin
 
-	if req_read='1' then
-	  if wb_adr_in=A_RX_REG then
-		wb_ack_out <= not tx_busy;
-	  else
-		wb_ack_out <= '1';
-	  end if;
-	elsif req_write='1' then
-	  if wb_adr_in=A_TX_REG then
-		wb_ack_out <= not tx_busy;
-	  else
-		wb_ack_out <= '1';
-	  end if;
-	else
-	 wb_ack_out <= '0';
-	end if;
+  	if req_read='1' then
+  	  if regadr=A_RX_REG then
+  		  wb_ack_out <= not tx_busy(portsel);
+  	  else
+  		  wb_ack_out <= '1';
+  	  end if;
+  	elsif req_write='1' then
+  	  if regadr=A_TX_REG then
+  		  wb_ack_out <= not tx_busy(portsel);
+  	  else
+  		  wb_ack_out <= '1';
+  	  end if;
+  	else
+  	 wb_ack_out <= '0';
+  	end if;
 
-	end process;
+  	end process;
 
 
 
   wb_dat_out <=
-       fill_bits(rx_reg) when wb_adr_in = A_RX_REG else
-       fill_bits(tx_reg) when wb_adr_in = A_TX_REG else
-       fill_bits(ctl_reg) when wb_adr_in = A_CTL_REG else
-       fill_bits(status_reg) when wb_adr_in = A_STATUS_REG else
-       fill_bits(clk_reg) when wb_adr_in = A_CLK_REG else (others => 'X');
+       fill_bits(rx_reg(portsel)) when wb_adr_in = A_RX_REG else
+       fill_bits(tx_reg(portsel)) when wb_adr_in = A_TX_REG else
+       fill_bits(ctl_reg(portsel)) when wb_adr_in = A_CTL_REG else
+       fill_bits(status_reg(portsel)) when wb_adr_in = A_STATUS_REG else
+       fill_bits(clk_reg(portsel)) when wb_adr_in = A_CLK_REG else (others => 'X');
 
 
    --=============================================================================================
     -- Component instantiation for the SPI master port
     --=============================================================================================
-    Inst_spi_master: spi_master
-        generic map (N => SPI_WORD_LEN, CPOL => CPOL, CPHA => CPHA)
-        port map(
-            sclk_i => spi_clk_i,
-            pclk_i => wb_clk_i,
-            rst_i => wb_rst_i,
-            clk_div_i => clk_reg,
-            spi_ssel_o => open,
-            spi_sck_o => slave_clk_o,
-            spi_mosi_o => slave_mosi_o,
-            spi_miso_i => slave_miso_i,
-            di_req_o => m_di_req_o,
-            di_i => tx_reg,
-            wren_i => m_wren_i,
-            do_valid_o => m_do_valid_o,
-            do_o => rx_reg,
-            wr_ack_o => m_wren_ack
-        );
+    spi_masters: for i in t_portrange generate
+      Inst_spi_master: spi_master
+          generic map (N => SPI_WORD_LEN, CPOL => CPOL, CPHA => CPHA)
+          port map(
+              sclk_i => spi_clk_i,
+              pclk_i => wb_clk_i,
+              rst_i => wb_rst_i,
 
+              clk_div_i => clk_reg(i),
+              spi_ssel_o => open,
+              spi_sck_o => slave_clk_o(i),
+              spi_mosi_o => slave_mosi_o(i),
+              spi_miso_i => slave_miso_i(i),
+              di_req_o => m_di_req_o(i),
+              di_i => tx_reg(i),
+              wren_i => m_wren_i(i),
+              do_valid_o => m_do_valid_o(i),
+              do_o => rx_reg(i),
+              wr_ack_o => m_wren_ack(i)
+          );
+
+          tx_busy(i) <= ctl_reg(i)(1) and status_reg(i)(0);
+
+    end generate;    
 
     -- Auto wait mode and transaction ongoing
-    tx_busy <= ctl_reg(1) and status_reg(0);
+   
 
 
     process(wb_clk_i) is
-    variable adr : t_adr; --required to have a "locally static" object for case statements
+   
 
     begin
-      adr:=wb_adr_in;
+      --adr:=wb_adr_in;
       if rising_edge(wb_clk_i) then
 
-        if m_do_valid_o = '1' then
-          status_reg(0) <= '0';
-          status_reg(1) <= '1';
-        end if;
+        for i in t_portrange loop
+          if m_do_valid_o(i) = '1' then
+            status_reg(i)(0) <= '0';
+            status_reg(i)(1) <= '1';
+          end if;
 
-        if m_wren_ack='1' then
-          write_lock <= '0';
-        end if;
-
-
-        m_wren_i <= '0';
+          if m_wren_ack(i)='1' then
+            write_lock(i) <= '0';
+          end if;
+          m_wren_i(i) <= '0';
+        end loop;  
 
         if wb_rst_i='1' then
-          ctl_reg <= "11";
-          status_reg <= (others=>'0');
-          clk_reg <= std_logic_vector(to_unsigned(SPI_2X_CLK_DIV-1,clk_reg'length));
-          write_lock <= '0';
+          for i in t_portrange loop
+            ctl_reg(i) <= "11";
+            status_reg(i) <= (others=>'0');
+            clk_reg(i) <= std_logic_vector(to_unsigned(SPI_2X_CLK_DIV-1,clk_reg'length));
+            write_lock(i) <= '0';
+          end loop;  
         elsif req_write='1'  then
-
-          case adr is
+          -- Bus write cycle
+          case regadr is
             when A_TX_REG =>
-              if  m_wren_ack='0' and write_lock='0' and tx_busy='0' then
-                m_wren_i <='1';
-                write_lock <= '1';
-                status_reg(0) <= '1';
-                tx_reg <= wb_dat_in(tx_reg'range);
+              if  m_wren_ack(portsel)='0' and write_lock(portsel)='0' and tx_busy(portsel)='0' then
+                m_wren_i(portsel) <='1';
+                write_lock(portsel) <= '1';
+                status_reg(portsel)(0) <= '1';
+                tx_reg(portsel) <= wb_dat_in(tx_reg'range);
               end if;
 
             when A_CTL_REG =>
-              ctl_reg <= wb_dat_in(ctl_reg'range);
+              ctl_reg(portsel) <= wb_dat_in(ctl_reg'range);
             when A_CLK_REG =>
-              clk_reg <= wb_dat_in(clk_reg'range);
+              clk_reg(portsel) <= wb_dat_in(clk_reg'range);
             when others => -- do nothing
           end case;
-        elsif req_read='1' and adr= A_RX_REG then
-          status_reg(1) <= '0';
+        elsif req_read='1' and regadr=A_RX_REG then
+          status_reg(portsel)(1) <= '0';
         end if;
       end if;
 
