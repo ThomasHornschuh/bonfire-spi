@@ -96,13 +96,13 @@ constant SPI_WORD_LEN : natural := 8;
 
 subtype t_portrange is natural range 0 to NUM_PORTS-1;
 
--- Currently max. 16 Ports are supported. 
+-- Currently max. 16 Ports are supported.
 -- For every port 16 adresses are reserved (actually only 5 are used)
 -- So, the lower 4 bits of the address select the register, the upper for select the port
 subtype t_register_adr_range is natural range ADR_LOW+3 downto ADR_LOW;
 subtype t_port_adr_range is natural range ADR_LOW+7 downto ADR_LOW+4;
 
-subtype t_regadr is std_logic_vector(3 downto 0);  
+subtype t_regadr is std_logic_vector(3 downto 0);
 subtype t_portadr is std_logic_vector(3 downto 0);
 
 -- Register addresses
@@ -195,9 +195,9 @@ begin
 
     regadr <= wb_adr_in(t_register_adr_range);
     portsel <= to_integer(unsigned( wb_adr_in(t_port_adr_range)));
+    irq <= '0'; -- no IRQs yet
 
 
-    slave_cs_o <= ctl_reg(0);
 
     enable <= wb_cyc_in and wb_stb_in;
     req_read <= enable and not wb_we_in;
@@ -227,17 +227,18 @@ begin
 
 
   wb_dat_out <=
-       fill_bits(rx_reg(portsel)) when wb_adr_in = A_RX_REG else
-       fill_bits(tx_reg(portsel)) when wb_adr_in = A_TX_REG else
-       fill_bits(ctl_reg(portsel)) when wb_adr_in = A_CTL_REG else
-       fill_bits(status_reg(portsel)) when wb_adr_in = A_STATUS_REG else
-       fill_bits(clk_reg(portsel)) when wb_adr_in = A_CLK_REG else (others => 'X');
+       fill_bits(rx_reg(portsel)) when regadr = A_RX_REG else
+       fill_bits(tx_reg(portsel)) when regadr = A_TX_REG else
+       fill_bits(ctl_reg(portsel)) when regadr = A_CTL_REG else
+       fill_bits(status_reg(portsel)) when regadr = A_STATUS_REG else
+       fill_bits(clk_reg(portsel)) when regadr = A_CLK_REG else (others => 'X');
 
 
    --=============================================================================================
     -- Component instantiation for the SPI master port
     --=============================================================================================
     spi_masters: for i in t_portrange generate
+
       Inst_spi_master: spi_master
           generic map (N => SPI_WORD_LEN, CPOL => CPOL, CPHA => CPHA)
           port map(
@@ -259,15 +260,16 @@ begin
           );
 
           tx_busy(i) <= ctl_reg(i)(1) and status_reg(i)(0);
+          slave_cs_o(i) <= ctl_reg(i)(0);
 
-    end generate;    
+    end generate;
 
     -- Auto wait mode and transaction ongoing
-   
+
 
 
     process(wb_clk_i) is
-   
+
 
     begin
       --adr:=wb_adr_in;
@@ -283,7 +285,7 @@ begin
             write_lock(i) <= '0';
           end if;
           m_wren_i(i) <= '0';
-        end loop;  
+        end loop;
 
         if wb_rst_i='1' then
           for i in t_portrange loop
@@ -291,7 +293,7 @@ begin
             status_reg(i) <= (others=>'0');
             clk_reg(i) <= std_logic_vector(to_unsigned(SPI_2X_CLK_DIV-1,clk_reg'length));
             write_lock(i) <= '0';
-          end loop;  
+          end loop;
         elsif req_write='1'  then
           -- Bus write cycle
           case regadr is
@@ -300,13 +302,13 @@ begin
                 m_wren_i(portsel) <='1';
                 write_lock(portsel) <= '1';
                 status_reg(portsel)(0) <= '1';
-                tx_reg(portsel) <= wb_dat_in(tx_reg'range);
+                tx_reg(portsel) <= wb_dat_in(tx_reg(0)'range);
               end if;
 
             when A_CTL_REG =>
-              ctl_reg(portsel) <= wb_dat_in(ctl_reg'range);
+              ctl_reg(portsel) <= wb_dat_in(ctl_reg(0)'range);
             when A_CLK_REG =>
-              clk_reg(portsel) <= wb_dat_in(clk_reg'range);
+              clk_reg(portsel) <= wb_dat_in(clk_reg(0)'range);
             when others => -- do nothing
           end case;
         elsif req_read='1' and regadr=A_RX_REG then

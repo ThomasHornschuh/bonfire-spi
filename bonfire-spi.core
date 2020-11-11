@@ -1,33 +1,82 @@
-CAPI=1
-[main]
-name = ::bonfire-spi:0
-depend = ::bonfire-util:0 ::bonfire-axi4l2wb:0
+CAPI=2:
+name: ::bonfire-spi:0
 
-simulators=ghdl isim xsim
+filesets:
 
-[fileset rtl]
-files = rtl/spi_master.vhd rtl/bonfire_spi.vhd
-file_type=vhdlSource
+  rtl:
+    depend:
+    - ::bonfire-util:0
+   
+    file_type: vhdlSource
+    files:
+    - rtl/spi_master.vhd 
+    - rtl/bonfire_spi.vhd
 
-[fileset axi4]
-files=axi4/bonfire_axi4_spi.vhd
-file_type=vhdlSource
-usage=vivado
+  axi4:
+    depend:
+       ::bonfire-axi4l2wb:0
+    file_type: vhdlSource
+    files:
+    - axi4/bonfire_axi4_spi.vhd
+
+  sim:
+    depend:
+    - ::bonfire-util:0
+    file_type: vhdlSource
+    files:
+    - tb/tb_spi_interface.vhd
+
+targets:
+  default:
+    filesets:
+    - rtl
+  sim:
+    default_tool: ghdl
+    tools:
+      ghdl:
+        analyze_options: [--ieee=synopsys, -frelaxed-rules ]
+        run_options: [ --ieee-asserts=disable, --max-stack-alloc=0, --wave=spi.ghw ] # --stop-time=2000ns ] 
+      xsim:
+        xelab_options: [ "--debug typical" ]
+
+    filesets:
+    - rtl
+    - sim
+    toplevel: tb_spi_interface
+  synth:
+    filesets:
+    - rtl
+    - axi4
+  
+
+# CAPI=1
+# [main]
+# name = ::bonfire-spi:0
+# depend = ::bonfire-util:0 ::bonfire-axi4l2wb:0
+
+# simulators=ghdl isim xsim
 
 
-[fileset sim]
-files= tb/tb_spi_interface.vhd
-file_type=vhdlSource
-scope = private
+
+# [fileset axi4]
+# files=axi4/bonfire_axi4_spi.vhd
+# file_type=vhdlSource
+# usage=vivado
 
 
-[simulator]
-toplevel = tb_spi_interface
-
-[ghdl]
-analyze_options= --ieee=synopsys
-
+# [fileset sim]
+# files= tb/tb_spi_interface.vhd
+# file_type=vhdlSource
+# scope = private
 
 
-[xsim]
-xsim_options= -debug all
+# [simulator]
+# toplevel = tb_spi_interface
+
+# [ghdl]
+# analyze_options= --ieee=synopsys
+
+
+
+# [xsim]
+# xsim_options= -debug all
