@@ -22,7 +22,7 @@ filesets:
   sim:
     depend:
     - ::bonfire-util:0
-    file_type: vhdlSource
+    file_type: vhdlSource-2008
     files:
     - tb/tb_spi_interface.vhd
 

@@ -1,0 +1,89 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Thu Nov 12 01:15:05 2020
+[*]
+[dumpfile] "C:\Users\thoma\development\fusesoc_build\bonfire-spi_0\sim-ghdl\spi.ghw"
+[dumpfile_mtime] "Wed Nov 11 20:08:57 2020"
+[dumpfile_size] 176517
+[savefile] "C:\Users\thoma\development\bonfire\bonfire-spi\test.gtkw"
+[timestart] 1069000000
+[size] 1680 987
+[pos] -1 -1
+*-30.273273 4405000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.tb_spi_interface.
+[treeopen] top.tb_spi_interface.uut.
+[treeopen] top.tb_spi_interface.uut.clk_reg.
+[treeopen] top.tb_spi_interface.uut.ctl_reg.
+[treeopen] top.tb_spi_interface.uut.rx_reg.
+[treeopen] top.tb_spi_interface.uut.spi_masters[0].
+[treeopen] top.tb_spi_interface.uut.spi_masters[0].inst_spi_master.
+[treeopen] top.tb_spi_interface.uut.status_reg.
+[treeopen] top.tb_spi_interface.uut.tx_reg.
+[sst_width] 330
+[signals_width] 274
+[sst_expanded] 1
+[sst_vpaned_height] 289
+@28
+top.tb_spi_interface.uut.wb_clk_i
+top.tb_spi_interface.uut.wb_cyc_in
+top.tb_spi_interface.uut.wb_stb_in
+top.tb_spi_interface.uut.wb_we_in
+@22
+#{top.tb_spi_interface.uut.wb_adr_in[17:2]} top.tb_spi_interface.uut.wb_adr_in[17] top.tb_spi_interface.uut.wb_adr_in[16] top.tb_spi_interface.uut.wb_adr_in[15] top.tb_spi_interface.uut.wb_adr_in[14] top.tb_spi_interface.uut.wb_adr_in[13] top.tb_spi_interface.uut.wb_adr_in[12] top.tb_spi_interface.uut.wb_adr_in[11] top.tb_spi_interface.uut.wb_adr_in[10] top.tb_spi_interface.uut.wb_adr_in[9] top.tb_spi_interface.uut.wb_adr_in[8] top.tb_spi_interface.uut.wb_adr_in[7] top.tb_spi_interface.uut.wb_adr_in[6] top.tb_spi_interface.uut.wb_adr_in[5] top.tb_spi_interface.uut.wb_adr_in[4] top.tb_spi_interface.uut.wb_adr_in[3] top.tb_spi_interface.uut.wb_adr_in[2]
+#{top.tb_spi_interface.uut.wb_dat_out[31:0]} top.tb_spi_interface.uut.wb_dat_out[31] top.tb_spi_interface.uut.wb_dat_out[30] top.tb_spi_interface.uut.wb_dat_out[29] top.tb_spi_interface.uut.wb_dat_out[28] top.tb_spi_interface.uut.wb_dat_out[27] top.tb_spi_interface.uut.wb_dat_out[26] top.tb_spi_interface.uut.wb_dat_out[25] top.tb_spi_interface.uut.wb_dat_out[24] top.tb_spi_interface.uut.wb_dat_out[23] top.tb_spi_interface.uut.wb_dat_out[22] top.tb_spi_interface.uut.wb_dat_out[21] top.tb_spi_interface.uut.wb_dat_out[20] top.tb_spi_interface.uut.wb_dat_out[19] top.tb_spi_interface.uut.wb_dat_out[18] top.tb_spi_interface.uut.wb_dat_out[17] top.tb_spi_interface.uut.wb_dat_out[16] top.tb_spi_interface.uut.wb_dat_out[15] top.tb_spi_interface.uut.wb_dat_out[14] top.tb_spi_interface.uut.wb_dat_out[13] top.tb_spi_interface.uut.wb_dat_out[12] top.tb_spi_interface.uut.wb_dat_out[11] top.tb_spi_interface.uut.wb_dat_out[10] top.tb_spi_interface.uut.wb_dat_out[9] top.tb_spi_interface.uut.wb_dat_out[8] top.tb_spi_interface.uut.wb_dat_out[7] top.tb_spi_interface.uut.wb_dat_out[6] top.tb_spi_interface.uut.wb_dat_out[5] top.tb_spi_interface.uut.wb_dat_out[4] top.tb_spi_interface.uut.wb_dat_out[3] top.tb_spi_interface.uut.wb_dat_out[2] top.tb_spi_interface.uut.wb_dat_out[1] top.tb_spi_interface.uut.wb_dat_out[0]
+#{top.tb_spi_interface.uut.wb_dat_in[31:0]} top.tb_spi_interface.uut.wb_dat_in[31] top.tb_spi_interface.uut.wb_dat_in[30] top.tb_spi_interface.uut.wb_dat_in[29] top.tb_spi_interface.uut.wb_dat_in[28] top.tb_spi_interface.uut.wb_dat_in[27] top.tb_spi_interface.uut.wb_dat_in[26] top.tb_spi_interface.uut.wb_dat_in[25] top.tb_spi_interface.uut.wb_dat_in[24] top.tb_spi_interface.uut.wb_dat_in[23] top.tb_spi_interface.uut.wb_dat_in[22] top.tb_spi_interface.uut.wb_dat_in[21] top.tb_spi_interface.uut.wb_dat_in[20] top.tb_spi_interface.uut.wb_dat_in[19] top.tb_spi_interface.uut.wb_dat_in[18] top.tb_spi_interface.uut.wb_dat_in[17] top.tb_spi_interface.uut.wb_dat_in[16] top.tb_spi_interface.uut.wb_dat_in[15] top.tb_spi_interface.uut.wb_dat_in[14] top.tb_spi_interface.uut.wb_dat_in[13] top.tb_spi_interface.uut.wb_dat_in[12] top.tb_spi_interface.uut.wb_dat_in[11] top.tb_spi_interface.uut.wb_dat_in[10] top.tb_spi_interface.uut.wb_dat_in[9] top.tb_spi_interface.uut.wb_dat_in[8] top.tb_spi_interface.uut.wb_dat_in[7] top.tb_spi_interface.uut.wb_dat_in[6] top.tb_spi_interface.uut.wb_dat_in[5] top.tb_spi_interface.uut.wb_dat_in[4] top.tb_spi_interface.uut.wb_dat_in[3] top.tb_spi_interface.uut.wb_dat_in[2] top.tb_spi_interface.uut.wb_dat_in[1] top.tb_spi_interface.uut.wb_dat_in[0]
+@28
+top.tb_spi_interface.uut.wb_ack_out
+top.tb_spi_interface.uut.slave_cs_o[0]
+top.tb_spi_interface.uut.slave_miso_i[0]
+top.tb_spi_interface.uut.slave_mosi_o[0]
+top.tb_spi_interface.uut.slave_clk_o[0]
+@200
+-
+@c00029
+#{top.tb_spi_interface.uut.status_reg[0][3:0]} top.tb_spi_interface.uut.status_reg[0][3] top.tb_spi_interface.uut.status_reg[0][2] top.tb_spi_interface.uut.status_reg[0][1] top.tb_spi_interface.uut.status_reg[0][0]
+@29
+top.tb_spi_interface.uut.status_reg[0][3]
+top.tb_spi_interface.uut.status_reg[0][2]
+top.tb_spi_interface.uut.status_reg[0][1]
+top.tb_spi_interface.uut.status_reg[0][0]
+@1401201
+-group_end
+@c00022
+#{top.tb_spi_interface.uut.clk_reg[0][7:0]} top.tb_spi_interface.uut.clk_reg[0][7] top.tb_spi_interface.uut.clk_reg[0][6] top.tb_spi_interface.uut.clk_reg[0][5] top.tb_spi_interface.uut.clk_reg[0][4] top.tb_spi_interface.uut.clk_reg[0][3] top.tb_spi_interface.uut.clk_reg[0][2] top.tb_spi_interface.uut.clk_reg[0][1] top.tb_spi_interface.uut.clk_reg[0][0]
+@28
+top.tb_spi_interface.uut.clk_reg[0][7]
+top.tb_spi_interface.uut.clk_reg[0][6]
+top.tb_spi_interface.uut.clk_reg[0][5]
+top.tb_spi_interface.uut.clk_reg[0][4]
+top.tb_spi_interface.uut.clk_reg[0][3]
+top.tb_spi_interface.uut.clk_reg[0][2]
+top.tb_spi_interface.uut.clk_reg[0][1]
+top.tb_spi_interface.uut.clk_reg[0][0]
+@1401200
+-group_end
+@28
+#{top.tb_spi_interface.uut.ctl_reg[0][1:0]} top.tb_spi_interface.uut.ctl_reg[0][1] top.tb_spi_interface.uut.ctl_reg[0][0]
+@22
+#{top.tb_spi_interface.uut.rx_reg[0][7:0]} top.tb_spi_interface.uut.rx_reg[0][7] top.tb_spi_interface.uut.rx_reg[0][6] top.tb_spi_interface.uut.rx_reg[0][5] top.tb_spi_interface.uut.rx_reg[0][4] top.tb_spi_interface.uut.rx_reg[0][3] top.tb_spi_interface.uut.rx_reg[0][2] top.tb_spi_interface.uut.rx_reg[0][1] top.tb_spi_interface.uut.rx_reg[0][0]
+@28
+top.tb_spi_interface.uut.m_do_valid_o[0]
+@200
+-
+@28
+top.tb_spi_interface.uut.m_di_req_o[0]
+@22
+#{top.tb_spi_interface.uut.tx_reg[0][7:0]} top.tb_spi_interface.uut.tx_reg[0][7] top.tb_spi_interface.uut.tx_reg[0][6] top.tb_spi_interface.uut.tx_reg[0][5] top.tb_spi_interface.uut.tx_reg[0][4] top.tb_spi_interface.uut.tx_reg[0][3] top.tb_spi_interface.uut.tx_reg[0][2] top.tb_spi_interface.uut.tx_reg[0][1] top.tb_spi_interface.uut.tx_reg[0][0]
+@28
+top.tb_spi_interface.uut.m_wren_i[0]
+top.tb_spi_interface.uut.m_wren_ack[0]
+@200
+-
+@28
+top.tb_spi_interface.uut.write_lock[0]
+top.tb_spi_interface.uut.tx_busy[0]
+@200
+-
+[pattern_trace] 1
+[pattern_trace] 0

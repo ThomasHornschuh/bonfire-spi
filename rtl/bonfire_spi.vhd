@@ -60,7 +60,7 @@ port (
       -- Wishbone ports:
       wb_clk_i   : in std_logic;
       wb_rst_i   : in std_logic;
-      wb_adr_in  : in  std_logic_vector(ADR_LOW+15 downto ADR_LOW);
+      wb_adr_in  : in  std_logic_vector(ADR_LOW+7 downto ADR_LOW);
       wb_dat_in  : in  std_logic_vector(WB_DATA_WIDTH-1 downto 0);
       wb_dat_out : out std_logic_vector(WB_DATA_WIDTH-1 downto 0);
       wb_we_in   : in  std_logic;
@@ -259,15 +259,12 @@ begin
               wr_ack_o => m_wren_ack(i)
           );
 
-          tx_busy(i) <= ctl_reg(i)(1) and status_reg(i)(0);
+          tx_busy(i) <= ctl_reg(i)(1) and status_reg(i)(0);   -- Auto wait mode and transaction ongoing
           slave_cs_o(i) <= ctl_reg(i)(0);
 
     end generate;
 
-    -- Auto wait mode and transaction ongoing
-
-
-
+  
     process(wb_clk_i) is
 
 
@@ -291,7 +288,7 @@ begin
           for i in t_portrange loop
             ctl_reg(i) <= "11";
             status_reg(i) <= (others=>'0');
-            clk_reg(i) <= std_logic_vector(to_unsigned(SPI_2X_CLK_DIV-1,clk_reg'length));
+            clk_reg(i) <= std_logic_vector(to_unsigned(SPI_2X_CLK_DIV-1,clk_reg(0)'length));
             write_lock(i) <= '0';
           end loop;
         elsif req_write='1'  then
