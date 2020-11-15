@@ -147,6 +147,7 @@
 -- 2011/08/01   v1.15.0135  [JD]    Fixed latch inference for spi_mosi_o driver at the fsm.
 --                                  The master and slave cores were verified in FPGA with continuous transmission, for all SPI modes.
 -- 2011/08/04   v1.15.0136  [JD]    Fixed assertions (PREFETCH >= 1) and minor comment bugs.
+-- 2020/11/15               [TH]    Changed CPHA and CPOL to be configurable at runtime 
 --
 -----------------------------------------------------------------------------------------------------------------------
 --  TODO
@@ -173,8 +174,7 @@ use ieee.std_logic_unsigned.all;
 entity spi_master is
     Generic (   
         N : positive := 32;                                             -- 32bit serial word length is default
-        CPOL : std_logic := '0';                                        -- SPI mode selection (mode 0 default)
-        CPHA : std_logic := '0';                                        -- CPOL = clock polarity, CPHA = clock phase.
+                                          -- CPOL = clock polarity, CPHA = clock phase.
         PREFETCH : positive := 2);                                       -- prefetch lookahead cycles
      --   SPI_2X_CLK_DIV : positive := 5);                                -- for a 100MHz sclk_i, yields a 10MHz SCK
     Port (  
@@ -182,6 +182,9 @@ entity spi_master is
         pclk_i : in std_logic := 'X';                                   -- high-speed parallel interface system clock
         rst_i : in std_logic := 'X';                                    -- reset core
         clk_div_i : std_logic_vector(7 downto 0);                  -- TH: Clock Divider
+        -- mode
+        cpol_i : std_logic;                                        -- SPI mode selection (mode 0 default)
+        cpha_i : std_logic;     
         
         ---- serial interface ----
         spi_ssel_o : out std_logic;                                     -- spi bus slave select line
@@ -357,41 +360,25 @@ begin
     end process core_clock_gen_proc;
 
     --=============================================================================================
-    --  GENERATE BLOCKS
+    -- CLOCK and PHASE
     --=============================================================================================
-    -- spi clk generator: generate spi_clk from core_clk depending on CPOL
-    spi_sck_cpol_0_proc: if CPOL = '0' generate
-    begin
-        spi_clk <= core_clk;            -- for CPOL=0, spi clk has idle LOW
-    end generate;
-    
-    spi_sck_cpol_1_proc: if CPOL = '1' generate
-    begin
-        spi_clk <= core_n_clk;          -- for CPOL=1, spi clk has idle HIGH
-    end generate;
+    -- spi_clk mux from core_clk depending on CPOL
+
+    spi_clk <= core_clk when cpol_i='0' else core_n_clk;
+
     -----------------------------------------------------------------------------------------------
-    -- Sampling clock enable generation: generate 'samp_ce' from 'core_ce' or 'core_n_ce' depending on CPHA
+    -- Sampling clock mux: generate 'samp_ce' from 'core_ce' or 'core_n_ce' depending on CPHA
     -- always sample data at the half-cycle of the fsm update cell
-    samp_ce_cpha_0_proc: if CPHA = '0' generate
-    begin
-        samp_ce <= core_ce;
-    end generate;
-        
-    samp_ce_cpha_1_proc: if CPHA = '1' generate
-    begin
-        samp_ce <= core_n_ce;
-    end generate;
-    -----------------------------------------------------------------------------------------------
-    -- FSM clock enable generation: generate 'fsm_ce' from core_ce or core_n_ce depending on CPHA
-    fsm_ce_cpha_0_proc: if CPHA = '0' generate
-    begin
-        fsm_ce <= core_n_ce;            -- for CPHA=0, latch registers at rising edge of negative core clock enable
-    end generate;
+
+    samp_ce <= core_ce when cpha_i='0' else core_n_ce;
+
     
-    fsm_ce_cpha_1_proc: if CPHA = '1' generate
-    begin
-        fsm_ce <= core_ce;              -- for CPHA=1, latch registers at rising edge of positive core clock enable
-    end generate;
+    -----------------------------------------------------------------------------------------------
+    -- FSM clock enable mux: generate 'fsm_ce' from core_ce or core_n_ce depending on CPHA
+
+    fsm_ce <= core_n_ce when cpha_i='0' else core_ce;
+
+    
     -----------------------------------------------------------------------------------------------
     -- sck enable control: control sck advance phase for CPHA='1' relative to fsm clock
     sck_ena_ce <= core_n_ce;            -- for CPHA=1, SCK is advanced one-half cycle
@@ -605,7 +592,7 @@ begin
             if sck_ena_reg = '1' then
                 spi_clk_reg <= spi_clk;                                 -- copy the selected clock polarity
             else
-                spi_clk_reg <= CPOL;                                    -- when clock disabled, set to idle polarity
+                spi_clk_reg <= cpol_i;                                    -- when clock disabled, set to idle polarity
             end if;
         end if;
         spi_sck_o <= spi_clk_reg;                                       -- connect register to output

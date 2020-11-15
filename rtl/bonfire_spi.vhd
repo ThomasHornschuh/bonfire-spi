@@ -18,7 +18,12 @@
 --                bit 1:  1 = RX data avaliable, will be cleared after reading RX register
 -- base+8   -- transmitter: write a byte here, starts SPI bus transaction
 -- base+0x0C   -- receiver: last byte received (updated on each transation)
--- base+0x10   -- clock divider: SPI CLK is clk_i/2*(1+n) ie for 128MHz clock, divisor 0 is 64MHz, 1 is 32MHz, 3 is 16MHz etc
+-- base+0x10   -- transfer mode and clock register 
+               --bit 7:0 clock divider: 
+               --SPI CLK is spi_clk= clk/((divder+1)*2) ie for 100MHz clock, divisor 0 is 50MHz, 1 is 25MHz, 2 is 16,6MHz etc
+               -- divider = (clk/(2*sclk))-1
+               --bit 8: CPHA = clock phase
+               --bit 9: CPOL = = clock polarity
 
 
 -- License: See LICENSE or LICENSE.txt File in git project root.
@@ -35,8 +40,8 @@ use IEEE.NUMERIC_STD.ALL;
 entity bonfire_spi is
 generic (
 
-   CPOL : std_logic := '0';  -- SPI mode selection (mode 0 default)
-   CPHA : std_logic := '0';  -- CPOL = clock polarity, CPHA = clock phase.
+   CPOL : std_logic := '0';  -- default SPI mode selection (mode 0 default)
+   CPHA : std_logic := '0';  -- default CPOL = clock polarity, CPHA = clock phase.
    SPI_2X_CLK_DIV : natural := 2;
 
 
@@ -112,6 +117,8 @@ constant A_TX_REG : t_regadr := "0010";
 constant A_RX_REG : t_regadr := "0011";
 constant A_CLK_REG :t_regadr := "0100";
 
+constant c_cpol_bit : natural := 9;
+constant c_cpha_bit : natural := 8;
 
 subtype t_dbus is std_logic_vector(wb_dat_out'high downto wb_dat_out'low);
 
@@ -138,9 +145,11 @@ signal write_lock : std_logic_vector(t_portrange) := (others=>'0');
 
 type t_word_reg is array (t_portrange) of std_logic_vector(SPI_WORD_LEN-1 downto 0);
 type t_ctl_reg is array (t_portrange) of std_logic_vector(1 downto 0);
-type t_status_reg is array (t_portrange) of std_logic_vector(3 downto 0);
-type t_clk_reg is array (t_portrange) of std_logic_vector(7 downto 0);
+type t_status_reg is array (t_portrange) of std_logic_vector(1 downto 0);
+type t_clk_reg is array (t_portrange) of std_logic_vector(9 downto 0);
 
+constant init_clock_reg : std_logic_vector(9 downto 0) := CPOL & CPHA & std_logic_vector(to_unsigned(SPI_2X_CLK_DIV-1,8));
+ 
 
 
 -- Registers
@@ -148,13 +157,11 @@ signal rx_reg : t_word_reg;
 signal tx_reg : t_word_reg;
 signal ctl_reg :  t_ctl_reg := (others=> "11" );
 signal status_reg : t_status_reg  := (others => (others => '0'));
-signal clk_reg : t_clk_reg :=   (others=>  std_logic_vector(to_unsigned(SPI_2X_CLK_DIV-1,8)) );
+signal clk_reg : t_clk_reg :=   (others=> init_clock_reg );
 
 component spi_master
 Generic (
     N : positive := 32;                                             -- 32bit serial word length is default
-    CPOL : std_logic := '0';                                        -- SPI mode selection (mode 0 default)
-    CPHA : std_logic := '0';                                        -- CPOL = clock polarity, CPHA = clock phase.
     PREFETCH : positive := 2);                                       -- prefetch lookahead cycles
  --   SPI_2X_CLK_DIV : positive := 5);                                -- for a 100MHz sclk_i, yields a 10MHz SCK
 Port (
@@ -162,6 +169,10 @@ Port (
     pclk_i : in std_logic := 'X';                                   -- high-speed parallel interface system clock
     rst_i : in std_logic := 'X';                                    -- reset core
     clk_div_i : std_logic_vector(7 downto 0);                  -- TH: Clock Divider
+
+     -- mode
+     cpol_i : std_logic;                                        -- SPI mode selection (mode 0 default)
+     cpha_i : std_logic; 
 
     ---- serial interface ----
     spi_ssel_o : out std_logic;                                     -- spi bus slave select line
@@ -240,13 +251,16 @@ begin
     spi_masters: for i in t_portrange generate
 
       Inst_spi_master: spi_master
-          generic map (N => SPI_WORD_LEN, CPOL => CPOL, CPHA => CPHA)
+          generic map (N => SPI_WORD_LEN)
           port map(
               sclk_i => spi_clk_i,
               pclk_i => wb_clk_i,
               rst_i => wb_rst_i,
 
-              clk_div_i => clk_reg(i),
+              clk_div_i => clk_reg(i)(7 downto 0),
+              cpol_i => clk_reg(i)(c_cpol_bit),
+              cpha_i => clk_reg(i)(c_cpha_bit),
+
               spi_ssel_o => open,
               spi_sck_o => slave_clk_o(i),
               spi_mosi_o => slave_mosi_o(i),
@@ -286,9 +300,9 @@ begin
 
         if wb_rst_i='1' then
           for i in t_portrange loop
-            ctl_reg(i) <= "11";
+            --ctl_reg(i) <= "11";
             status_reg(i) <= (others=>'0');
-            clk_reg(i) <= std_logic_vector(to_unsigned(SPI_2X_CLK_DIV-1,clk_reg(0)'length));
+            --clk_reg(i) <= std_logic_vector(to_unsigned(SPI_2X_CLK_DIV-1,clk_reg(0)'length));
             write_lock(i) <= '0';
           end loop;
         elsif req_write='1'  then

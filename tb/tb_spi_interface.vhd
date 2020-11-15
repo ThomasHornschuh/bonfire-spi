@@ -198,7 +198,7 @@ BEGIN
       procedure set_divider(portnum: natural; clk_divider:natural) is
       variable div : std_logic_vector(7 downto 0);
       begin
-         div:=std_logic_vector(to_unsigned(clk_divider-1,t'length));
+         div:=std_logic_vector(to_unsigned(clk_divider,t'length));
          print_t("Setting up Clock Divider for port:" & str(portnum));
          wb_write(padr(portnum,X"4"),div); -- Clock Divider
          wb_read(padr(portnum,X"4"),d);
@@ -215,7 +215,7 @@ BEGIN
       begin
 
         for p in t_portrange loop
-          set_divider(p,2);
+          set_divider(p,1);
         end loop;
         basic_test(1,4);
        
@@ -267,9 +267,9 @@ BEGIN
         end loop;
 
         print_t("Test different clock rates");
-        set_divider(0,1); -- Lower extreme
+        set_divider(0,0); -- Lower extreme
         basic_test(250,255);
-        set_divider(0,256); -- Upper extreme
+        set_divider(0,125); -- ~400Khz
         basic_test(250,251); -- Only a few bytes because of the slow clock
 
       end procedure;
