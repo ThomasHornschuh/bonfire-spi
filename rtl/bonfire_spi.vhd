@@ -8,8 +8,12 @@
 -- The Bonfire Processor Project, (c) 2018 Thomas Hornschuh
 -- SPI Interface
 
+-- The core supports up to 16 SPI master interfaces. If NUM_PORTS is > 1 the register map descibed below
+-- repeats all 16 "words". When a byte addressable memory map is used (ADR_LOW=2) the offest is 16*4 = 64
+-- So when SPI port 0 is at base, the register set of SPI port 1 is at base+64  
 
--- registers:
+-- registers
+-- Offsets below are valid for byte addressable memory. On word-level the offsets are 0,1,2,3,4.
 -- base+0   -- control register
 --             Bit 0: Slave_cs (TODO: Check polarity...)
 --             Bit 1: 1 = Autowait mode (Bus Blocks until transfer is finished), set by Default
