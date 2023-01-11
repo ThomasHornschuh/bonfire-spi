@@ -206,15 +206,26 @@ Port (
 end component spi_master;
 
 
-begin
+begin  
 
-    regadr <= wb_adr_in(t_register_adr_range);
-    portsel <= to_integer(unsigned( wb_adr_in(t_port_adr_range)));
+  select_adr: process(wb_adr_in,wb_cyc_in,wb_stb_in)
+  variable sel : integer;
+  begin
+      regadr <= wb_adr_in(t_register_adr_range);      
+      sel := to_integer(unsigned( wb_adr_in(t_port_adr_range)));
+      if wb_cyc_in='1' and wb_stb_in='1' and  sel <= (NUM_PORTS-1) then
+        portsel <= sel;
+        enable <=  '1';
+      else
+        enable <= '0';
+        --report "bonfire_spi adr select out of range: " & integer'image(sel) severity note;
+      end if;  
+  
+  end process;  
+
+    
     irq <= '0'; -- no IRQs yet
-
-
-
-    enable <= wb_cyc_in and wb_stb_in;
+    
     req_read <= enable and not wb_we_in;
     req_write <= enable and wb_we_in;
 
